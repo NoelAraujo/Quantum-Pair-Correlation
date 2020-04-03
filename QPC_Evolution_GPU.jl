@@ -1,5 +1,5 @@
 ## Build params
-function getScalarKernel(r, N)
+function getScalarKernel(r, N; Γ = 1)
     R_jk = Distances.pairwise(Euclidean(), r, r, dims=1)
     G = Array{Complex{Float64}}(undef, N, N)
     @. G = -(Γ/2)*exp(1im*R_jk)/(1im*R_jk)
