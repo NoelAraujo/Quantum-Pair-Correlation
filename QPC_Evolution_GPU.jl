@@ -132,11 +132,6 @@ end
 
 
 ## EDO Solver Related
-mutable struct sigmas_info
-	σ⁻
-	σᶻ
-	σ⁺σ⁻
-end
 
 function simple_rk4(f::Function, u₀, t₀t₁, n::Integer, params)
     t₀,t₁ = t₀t₁[1], t₀t₁[2]
