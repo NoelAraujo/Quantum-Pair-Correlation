@@ -132,13 +132,20 @@ end
 
 
 ## EDO Solver Related
+mutable struct sigmas_info
+	σ⁻
+	σᶻ
+	σ⁺σ⁻
+end
+
 function simple_rk4(f::Function, u₀, t₀t₁, n::Integer, params)
     t₀,t₁ = t₀t₁[1], t₀t₁[2]
     vt = Vector{Float64}(undef, n + 1)
     vt[1] = t = t₀
 	u = u₀
 	vu = []
-	push!(vu, Array(u₀[1:2*N]))
+	sigmadata = sigmas_info(Array(u₀[1:N]), Array(u₀[N+1:2*N]), Array(reshape(u₀[2*N+1+N^2:2*N+2*N^2],(N,N))))
+	push!(vu, sigmadata)
     h = (t₁ - t₀) / n
 
     @progress for i in 1:n
@@ -148,7 +155,8 @@ function simple_rk4(f::Function, u₀, t₀t₁, n::Integer, params)
         k₃ = h * f(t + 0.5h, u + 0.5k₂, params)
         k₄ = h * f(t + h   , u + k₃,    params)
 		u = u + (k₁ + 2k₂ + 2k₃ + k₄) / 6
-		push!(vu, Array(u[1:2*N]))  # I store only the parts that I know that are important
+		sigmadata = sigmas_info(Array(u[1:N]), Array(u[N+1:2*N]), Array(reshape(u[2*N+1+N^2:2*N+2*N^2],(N,N))))
+		push!(vu, sigmadata) # I store only the parts that I know that are important
         vt[i + 1] = t = t₀ + i*h
     end
     return vt, vu, u
@@ -188,7 +196,7 @@ function geometricFactor(θ, atoms; k₀=1)
             rₘ = atoms[m,:]
 			rⱼₘ = rⱼ .- rₘ
 			argument_bessel = k₀*sin(θ)*sqrt( rⱼₘ[1]^2 + rⱼₘ[2]^2)
-			Gⱼₘ[j,m] = exp(im*k₀*rⱼₘ[3])*besselj0(argument_bessel)
+			Gⱼₘ[j,m] = exp(im*k₀*rⱼₘ[3]*cos(θ))*besselj0(argument_bessel)
         end
     end
 	return Gⱼₘ
