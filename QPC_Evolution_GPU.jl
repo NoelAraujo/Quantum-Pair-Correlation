@@ -143,13 +143,16 @@ function simple_rk4(f::Function, u₀, t₀t₁, n::Integer, params)
 	push!(vu, sigmadata)
     h = (t₁ - t₀) / n
 
-    @progress for i in 1:n
+    for i in 1:n
 		# println(i,"/",n)
         k₁ = h * f(t, u, params)
         k₂ = h * f(t + 0.5h, u + 0.5k₁, params)
         k₃ = h * f(t + 0.5h, u + 0.5k₂, params)
         k₄ = h * f(t + h   , u + k₃,    params)
 		u = u + (k₁ + 2k₂ + 2k₃ + k₄) / 6
+		if any(isnan.(u))
+			break
+		end
 		sigmadata = sigmas_info(Array(u[1:N]), Array(u[N+1:2*N]), Array(reshape(u[2*N+1+N^2:2*N+2*N^2],(N,N))))
 		push!(vu, sigmadata) # I store only the parts that I know that are important
         vt[i + 1] = t = t₀ + i*h
@@ -161,7 +164,7 @@ end
 function intensityInPoint(atoms, σ⁻, n̂; k₀=1)
     intensity = zero(eltype(σ⁻))
     σ⁺ = conj.(σ⁻)
-    @progress for j=1:N
+    for j=1:N
         rⱼ = atoms[j,:]
         for m=1:N
             rₘ = atoms[m,:]
@@ -174,7 +177,7 @@ end
 function getIntensityFromOneTime(atoms, σ⁻)
     intensity = zero(eltype(σ⁻))
     ϕ_range = 1:5:360 # integrate over ϕ
-    @progress for (idx, ϕ) in enumerate(ϕ_range)
+    for (idx, ϕ) in enumerate(ϕ_range)
         spherical_coordinate = [rad2deg(ϕ), rad2deg(35), 5*radius]
         n̂ = sph2cart(spherical_coordinate)
         intensity += intensityInPoint(atoms, σ⁻, n̂)
