@@ -36,13 +36,6 @@ function get_one_random_atom_inside_homogenous_sphere!(Radius, r_new_atom)
     nothing
 end
 
-function get_one_random_atom_inside_gaussian_sphere!(Radius, r_new_atom)
-    r_new_atom[1] = 2π*rand() #azimuth
-    r_new_atom[2] = asin(2*rand() - 1) #elevation
-    r_new_atom[3] = abs(Radius*(randn()))^(1 ./3.) #radii
-    r_new_atom[:] = sph2cart(r_new_atom)
-    nothing
-end
 
 """
     spherical_coordinate=[azimuth, elevation, r]
@@ -77,8 +70,6 @@ function get_Distance_A_to_b(A,b)
     end
     return distanceAb
 end
-
-
 
 
 
